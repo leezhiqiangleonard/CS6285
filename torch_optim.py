@@ -461,13 +461,7 @@ class Adafactor(torch.optim.Optimizer):
             loss = closure()
 
         for group in self.param_groups:
-
-            cnt  = 0
-
             for p in group["params"]:
-
-                cnt += 1
-
                 if p.grad is None:
                     continue
                 grad = p.grad.data
@@ -481,13 +475,9 @@ class Adafactor(torch.optim.Optimizer):
 
                 factored, use_first_moment = self._get_options(group, grad_shape)
 
-                if cnt == 7:
-                    ipdb.set_trace()
-
                 # State Initialization
                 if len(state) == 0:
                     state["step"] = 0
-
                     if use_first_moment:
                         # Exponential moving average of gradient values
                         state["exp_avg"] = torch.zeros_like(grad)
