@@ -390,6 +390,11 @@ class Adafactor(torch.optim.Optimizer):
         clip_threshold=1.0,
         decay_rate=-0.8,
         beta1=None,
+        beta2=None, # Added by HWT
+        epsilon=None, # Added by HWT
+        luc=False, # Added by HWT
+        luc_trust=1e-3, # Added by HWT
+        luc_eps=1e-8, # Added by HWT
         weight_decay=0.0,
         scale_parameter=True,
         relative_step=True,
@@ -406,6 +411,11 @@ class Adafactor(torch.optim.Optimizer):
             clip_threshold=clip_threshold,
             decay_rate=decay_rate,
             beta1=beta1,
+            beta2=beta2, # Added by HWT
+            epsilon=epsilon, # Added by HWT
+            luc=luc, # Added by HWT
+            luc_trust=luc_trust-3, # Added by HWT
+            luc_eps=luc_eps, # Added by HWT   
             weight_decay=weight_decay,
             scale_parameter=scale_parameter,
             relative_step=relative_step,
@@ -532,6 +542,7 @@ class Adafactor(torch.optim.Optimizer):
                 update.div_(
                     (self._rms(update) / group["clip_threshold"]).clamp_(min=1.0)
                 )
+
                 update.mul_(group["lr"])
 
                 if use_first_moment:
@@ -608,7 +619,13 @@ class Novograd(torch.optim.Optimizer):
             loss = closure()
 
         for group in self.param_groups:
+
+            cnt = 0
+
             for p in group["params"]:
+
+                cnt += 1
+
                 if p.grad is None:
                     continue
                 grad = p.grad.data
@@ -649,6 +666,9 @@ class Novograd(torch.optim.Optimizer):
                     denom = max_exp_avg_sq.sqrt().add_(group["eps"])
                 else:
                     denom = exp_avg_sq.sqrt().add_(group["eps"])
+                    
+                # if cnt == 7:
+                #     print('\t\t\t\t\t\t\tHHHH', denom)
 
                 grad.div_(denom)
                 if group["weight_decay"] != 0:
