@@ -620,11 +620,7 @@ class Novograd(torch.optim.Optimizer):
 
         for group in self.param_groups:
 
-            cnt = 0
-
             for p in group["params"]:
-
-                cnt += 1
 
                 if p.grad is None:
                     continue
@@ -667,9 +663,6 @@ class Novograd(torch.optim.Optimizer):
                 else:
                     denom = exp_avg_sq.sqrt().add_(group["eps"])
                     
-                # if cnt == 7:
-                #     print('\t\t\t\t\t\t\tHHHH', denom)
-
                 grad.div_(denom)
                 if group["weight_decay"] != 0:
                     grad.add_(p.data, alpha=group["weight_decay"])

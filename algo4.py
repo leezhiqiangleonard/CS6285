@@ -68,9 +68,7 @@ class Algo4(Adafactor):
 			loss = closure()
 
 		for group in self.param_groups:
-			cnt = 0
 			for p in group["params"]:
-				cnt += 1
 				if p.grad is None:
 					continue
 				grad = p.grad.data
@@ -174,9 +172,6 @@ class Algo4(Adafactor):
 				norm = grad.norm().pow(2)
 				# state["second_moment"].mul_(beta2).add_(norm, alpha=1.0 - beta2).div_(bias_correction2)
 				state["second_moment"].mul_(beta2).add_(norm, alpha=1.0 - beta2)
-				if cnt == 7:
-					# print('\t\t\t\t\t\t\tHHHH', state["second_moment"])
-					pass
 
 				denom = state["second_moment"].sqrt().add_(group["epsilon"])
 
