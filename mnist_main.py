@@ -10,11 +10,17 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
-from torch_optim import SGD, Adam, AdamW, Adafactor, Novograd
+from torch_optim import SGD, AdamW, Novograd
 from novofactor import NovoFactor
 from algo1 import Algo1
 from algo3 import Algo3
 from algo4 import Algo4
+from algo5 import Algo5
+from algo6 import Algo6
+
+from adafactor import Adafactor
+
+from adam import Adam
 
 
 class Net(nn.Module):
@@ -131,12 +137,17 @@ def main():
 
     model = Net().to(device)
     # optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
-    # optimizer = Adafactor(model.parameters())
     # optimizer = Novograd(model.parameters(), lr=0.0005)
     # optimizer = SGD(model.parameters(), lr=args.lr, momentum=0.5)
     # optimizer = Algo3(model.parameters())
-    optimizer = Algo4(model.parameters())
+    # optimizer = Algo4(model.parameters())
     # optimizer = NovoFactor(model.parameters(), lr=args.lr)
+    # optimizer = Adam(model.parameters(), lr=args.lr)
+    # optimizer = Adafactor(model.parameters(), lr=args.lr, relative_step=False)
+    # optimizer = Adafactor(model.parameters())
+    # optimizer = Algo5(model.parameters())
+    optimizer = Algo6(model.parameters())
+
 
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)

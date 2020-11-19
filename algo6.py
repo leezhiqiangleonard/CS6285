@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import ipdb
-
+import math
 import torch
 
 from torch_optim import Adafactor
 
-class Algo3(Adafactor):
-	"""docstring for Algo3"""
+class Algo6(Adafactor):
+	"""docstring for Algo6"""
 	def __init__(self,
 		params,
 		lr=None,
@@ -26,7 +26,7 @@ class Algo3(Adafactor):
 		relative_step=True,
 		warmup_init=False,
 	):
-		super(Algo3, self).__init__(params,
+		super(Algo6, self).__init__(params,
 			lr=lr,
 			eps=eps,
 			clip_threshold=clip_threshold,
@@ -50,7 +50,7 @@ class Algo3(Adafactor):
 		# return factored, use_first_moment
 		return factored, True
 
-	def _approx_sq_grad_1(self, exp_avg_sq_row, exp_avg_sq_col):
+	def _approx_sq_grad(self, exp_avg_sq_row, exp_avg_sq_col):
 		r_factor = (
 			(exp_avg_sq_row / exp_avg_sq_row.mean(dim=-1, keepdim=True))
 			.unsqueeze(-1)
@@ -84,7 +84,9 @@ class Algo3(Adafactor):
 
 				factored, use_first_moment = self._get_options(group, grad_shape)
 
-				# State Initialization: Zero Initialization
+				grad_square = grad ** 2
+
+				# State Initialization
 				if len(state) == 0:
 					state["step"] = 0
 					if use_first_moment: # Always True
@@ -97,9 +99,18 @@ class Algo3(Adafactor):
 						).to(grad)
 					else:
 						state["exp_avg_sq"] = torch.zeros_like(grad)
-						
+
 					state["RMS"] = 0
-					state["second_moment"] = torch.zeros(1, dtype=torch.float32).to(grad)
+
+					# Bias Corrected Initialization
+					if use_first_moment: # Always True
+						state["exp_avg"].copy_(grad)
+					if factored:
+						state["exp_avg_sq_row"].add_(grad_square.mean(dim=-1))
+						state["exp_avg_sq_col"].add_(grad_square.mean(dim=-2))	
+					else:
+						state["exp_avg_sq"].copy_(grad_square)
+
 				else:
 					if use_first_moment:
 						state["exp_avg"] = state["exp_avg"].to(grad)
@@ -109,9 +120,6 @@ class Algo3(Adafactor):
 					else:
 						state["exp_avg_sq"] = state["exp_avg_sq"].to(grad)
 
-					state["second_moment"] = state["second_moment"].to(grad)
-
-
 				p_data_fp32 = p.data
 				if p.data.dtype in {torch.float16, torch.bfloat16}:
 					p_data_fp32 = p_data_fp32.float()
@@ -120,83 +128,52 @@ class Algo3(Adafactor):
 				state["RMS"] = self._rms(p_data_fp32)
 				group["lr"] = self._get_lr(group, state)
 
-				# beta2t = 1.0 - math.pow(state["step"], group["decay_rate"]) # Increasing Decay Parameter
-				# beta1t = 1.0 - math.pow(state["step"], group["decay_rate"]) # Increasing Decay Parameter
+				beta2t = 1.0 - math.pow(state["step"], group["decay_rate"]) # Increasing Decay Parameter
+
 				beta1 = group["beta1"]
 				beta2 = group["beta2"]
-				# update = (grad ** 2) + group["eps"][0]
-				# update = grad + group["eps"][0] 
-				update = grad
+
+				bias_correction1 = 1 - beta1 ** state['step']
+				bias_correction2 = 1 - beta2 ** state['step']
+
+				update = grad_square + group["eps"][0]
 				if factored:
 					exp_avg_sq_row = state["exp_avg_sq_row"]
 					exp_avg_sq_col = state["exp_avg_sq_col"]
 
-					# exp_avg_sq_row.mul_(beta2t).add_(
-					#	 update.mean(dim=-1), alpha=1.0 - beta2t
-					# )
-					# exp_avg_sq_col.mul_(beta2t).add_(
-					#	 update.mean(dim=-2), alpha=1.0 - beta2t
-					# )
-
-					exp_avg_sq_row.mul_(beta1).add_(
-						update.mean(dim=-1), alpha=1.0 - beta1
+					exp_avg_sq_row.mul_(beta2).add_(
+						update.mean(dim=-1), alpha=1.0 - beta2
 					)
-					exp_avg_sq_col.mul_(beta1).add_(
-						update.mean(dim=-2), alpha=1.0 - beta1
-					)			   
+					exp_avg_sq_col.mul_(beta2).add_(
+						update.mean(dim=-2), alpha=1.0 - beta2
+					)
 
 					# Approximation of exponential moving average of square of gradient
-					update = self._approx_sq_grad_1(exp_avg_sq_row, exp_avg_sq_col)
-					# update.mul_(grad)
+					update = self._approx_sq_grad(exp_avg_sq_row, exp_avg_sq_col)
+					update = grad/(update.norm() + group["epsilon"])
 				else:
 					exp_avg_sq = state["exp_avg_sq"]
-					# exp_avg_sq.mul_(beta2t).add_(update, alpha=1.0 - beta2t)
-					# update = exp_avg_sq.rsqrt().mul_(grad)
-					exp_avg_sq.mul_(beta1).add_(update, alpha=1.0 - beta1)
 
-				# bias correction
-				bias_correction1 = 1 - beta1 ** state['step']
-				bias_correction2 = 1 - beta2 ** state['step']
+					exp_avg_sq.mul_(beta2).add_(update, alpha=1.0 - beta2)
+					update = exp_avg_sq.rsqrt().mul_(grad)
 
-				# first moment
-				update.div_(bias_correction1)
-
-				# second moment
-				norm = grad.norm().pow(2)
-				state["second_moment"].mul_(beta2).add_(norm, alpha=1.0 - beta2).div_(bias_correction2)
-
-
-				denom = state["second_moment"].sqrt().add_(group["epsilon"])
-
-				update.div_(denom)
-
-
-
-				# Not sure what this is
 				update.div_(
-					 (self._rms(update) / group["clip_threshold"]).clamp_(min=1.0)
+					(self._rms(update) / group["clip_threshold"]).clamp_(min=1.0)
 				)
 
+				update.mul_(group["lr"])
 
-				# if use_first_moment:
-				#	 exp_avg = state["exp_avg"]
-				#	 exp_avg.mul_(group["beta1"]).add_(update, alpha=1 - group["beta1"])
-				#	 update = exp_avg
+				if use_first_moment:
+					exp_avg = state["exp_avg"]
+					exp_avg.mul_(group["beta1"]).add_(update, alpha=1 - group["beta1"])
+					update = exp_avg
 
 				if group["weight_decay"] != 0:
 					p_data_fp32.add_(
 						p_data_fp32, alpha=-group["weight_decay"] * group["lr"]
 					)
 
-				if group["luc"]:
-					# Clip update so that updates are less than eta*weights
-					data_norm = torch.norm(p.data)
-					grad_norm = torch.norm(update.data)
-					luc_factor = group["luc_trust"] * data_norm / (grad_norm + group["luc_eps"])
-					luc_factor = min(luc_factor, group["lr"])
-					p_data_fp32.add_(update, alpha=-luc_factor)
-				else:
-					p_data_fp32.add_(update, alpha=-group["lr"])
+				p_data_fp32.add_(-update)
 
 				if p.data.dtype in {torch.float16, torch.bfloat16}:
 					p.data.copy_(p_data_fp32)
