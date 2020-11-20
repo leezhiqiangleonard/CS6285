@@ -5,7 +5,7 @@ import ipdb
 import math
 import torch
 
-from torch_optim import Adafactor
+from adafactor import Adafactor
 
 class Algo6(Adafactor):
 	"""docstring for Algo6"""

@@ -8,6 +8,13 @@ import time
 import ipdb
 import memory_profiler
 
+class _RequiredParameter(object):
+    """Singleton class representing a required parameter for an Optimizer."""
+    def __repr__(self):
+        return "<required parameter>"
+
+required = _RequiredParameter()
+
 @contextmanager
 def memory_time_moniter():
 	"""Helper for measuring runtime and memory cost"""

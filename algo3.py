@@ -5,7 +5,7 @@ import ipdb
 
 import torch
 
-from torch_optim import Adafactor
+from adafactor import Adafactor
 
 class Algo3(Adafactor):
 	"""docstring for Algo3"""

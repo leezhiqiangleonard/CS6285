@@ -183,7 +183,6 @@ class Adafactor(torch.optim.Optimizer):
 
                     # Approximation of exponential moving average of square of gradient
                     update = self._approx_sq_grad(exp_avg_sq_row, exp_avg_sq_col)
-                    ipdb.set_trace()
                     update.mul_(grad)
                 else:
                     exp_avg_sq = state["exp_avg_sq"]

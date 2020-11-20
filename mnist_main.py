@@ -10,17 +10,22 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
-from torch_optim import SGD, AdamW, Novograd
+from adafactor import Adafactor
+from adam import Adam
+from adamw import AdamW
+from lamb import Lamb
+from lars import LARS
+from novograd import NovoGrad
 from novofactor import NovoFactor
+from sgd import SGD
+
 from algo1 import Algo1
 from algo3 import Algo3
 from algo4 import Algo4
 from algo5 import Algo5
 from algo6 import Algo6
 
-from adafactor import Adafactor
 
-from adam import Adam
 
 
 class Net(nn.Module):
@@ -92,6 +97,8 @@ def main():
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
+    # parser.add_argument('--epochs', type=int, default=14, metavar='N',
+                        # help='number of epochs to train (default: 14)')
     parser.add_argument('--epochs', type=int, default=1, metavar='N',
                         help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
@@ -128,25 +135,29 @@ def main():
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
         ])
-    dataset1 = datasets.MNIST('../data', train=True, download=True,
+    dataset1 = datasets.MNIST('data', train=True, download=True,
                        transform=transform)
-    dataset2 = datasets.MNIST('../data', train=False,
+    dataset2 = datasets.MNIST('data', train=False,
                        transform=transform)
     train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
     # optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
-    # optimizer = Novograd(model.parameters(), lr=0.0005)
-    # optimizer = SGD(model.parameters(), lr=args.lr, momentum=0.5)
+    # optimizer = Adafactor(model.parameters(), lr=args.lr, relative_step=False)
+    # optimizer = Adam(model.parameters(), lr=args.lr)
+    # optimizer = AdamW(model.parameters(), lr=args.lr)
+    # optimizer = Lamb(model.parameters(), lr=args.lr)
+    # optimizer = LARS(model.parameters(), lr=args.lr)
+    # optimizer = NovoGrad(model.parameters(), lr=0.0005)
+    # optimizer = SGD(model.parameters(), lr=args.lr)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
     # optimizer = Algo3(model.parameters())
     # optimizer = Algo4(model.parameters())
     # optimizer = NovoFactor(model.parameters(), lr=args.lr)
-    # optimizer = Adam(model.parameters(), lr=args.lr)
-    # optimizer = Adafactor(model.parameters(), lr=args.lr, relative_step=False)
-    # optimizer = Adafactor(model.parameters())
-    # optimizer = Algo5(model.parameters())
-    optimizer = Algo6(model.parameters())
+    optimizer = Algo5(model.parameters())
+    # optimizer = Algo5(model.parameters(), lr=args.lr, relative_step=False)
+    # optimizer = Algo6(model.parameters())
 
 
 

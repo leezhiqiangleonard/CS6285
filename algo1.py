@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import torch
-from torch_optim import *
+from adafactor import *
 
 class Algo1(Adafactor):
 	"""docstring for Algo1"""
