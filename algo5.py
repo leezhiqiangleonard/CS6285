@@ -124,42 +124,47 @@ class Algo5(Adafactor):
 				bias_correction1 = 1 - beta1 ** state['step']
 				bias_correction2 = 1 - beta2 ** state['step']
 
-				update = (grad ** 2) + group["eps"][0]
+				second_moment = (grad ** 2) + group["eps"][0]
 				if factored:
 					exp_avg_sq_row = state["exp_avg_sq_row"]
 					exp_avg_sq_col = state["exp_avg_sq_col"]
 
 					exp_avg_sq_row.mul_(beta2).add_(
-						update.mean(dim=-1), alpha=1.0 - beta2
+						second_moment.mean(dim=-1), alpha=1.0 - beta2
 					)
 					exp_avg_sq_col.mul_(beta2).add_(
-						update.mean(dim=-2), alpha=1.0 - beta2
+						second_moment.mean(dim=-2), alpha=1.0 - beta2
 					)
 
 					# Approximation of exponential moving average of square of gradient
-					update = self._approx_sq_grad(exp_avg_sq_row, exp_avg_sq_col) / bias_correction2
-					update = grad/(update.norm() + group["epsilon"])
+					second_moment = self._approx_sq_grad(exp_avg_sq_row, exp_avg_sq_col) / bias_correction2
+					denominator = second_moment.norm() + group["epsilon"]
 				else:
 					exp_avg_sq = state["exp_avg_sq"]
 
-					exp_avg_sq.mul_(beta2).add_(update, alpha=1.0 - beta2)
-					update = exp_avg_sq.rsqrt().mul_(grad)
+					exp_avg_sq.mul_(beta2).add_(second_moment, alpha=1.0 - beta2)
+					denominator = exp_avg_sq.rsqrt().norm() + group["epsilon"]
 
-				update.div_(
-					(self._rms(update) / group["clip_threshold"]).clamp_(min=1.0)
-				)
-
-				update.mul_(group["lr"])
+				nominator = grad
 
 				if use_first_moment:
 					exp_avg = state["exp_avg"]
-					exp_avg.mul_(group["beta1"]).add_(update, alpha=1 - group["beta1"])
-					update = exp_avg / bias_correction1
+					exp_avg.mul_(group["beta1"]).add_(nominator, alpha=1 - group["beta1"])
+					nominator = exp_avg / bias_correction1
+
+				nominator.mul_(group["lr"])
+
+				update = nominator/denominator
 
 				if group["weight_decay"] != 0:
 					p_data_fp32.add_(
 						p_data_fp32, alpha=-group["weight_decay"] * group["lr"]
 					)
+
+				# Update Clipping
+				update.div_(
+					(self._rms(update) / group["clip_threshold"]).clamp_(min=1.0)
+				)
 
 				p_data_fp32.add_(-update)
 

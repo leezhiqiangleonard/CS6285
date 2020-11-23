@@ -155,9 +155,9 @@ def main():
     # optimizer = Algo3(model.parameters())
     # optimizer = Algo4(model.parameters())
     # optimizer = NovoFactor(model.parameters(), lr=args.lr)
-    optimizer = Algo5(model.parameters())
+    # optimizer = Algo5(model.parameters())
     # optimizer = Algo5(model.parameters(), lr=args.lr, relative_step=False)
-    # optimizer = Algo6(model.parameters())
+    optimizer = Algo6(model.parameters())
 
 
 
