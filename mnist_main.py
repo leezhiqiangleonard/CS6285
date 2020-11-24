@@ -97,9 +97,7 @@ def main():
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
-    # parser.add_argument('--epochs', type=int, default=14, metavar='N',
-                        # help='number of epochs to train (default: 14)')
-    parser.add_argument('--epochs', type=int, default=1, metavar='N',
+    parser.add_argument('--epochs', type=int, default=14, metavar='N',
                         help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
                         help='learning rate (default: 1.0)')
@@ -144,7 +142,7 @@ def main():
 
     model = Net().to(device)
     # optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
-    # optimizer = Adafactor(model.parameters(), lr=args.lr, relative_step=False)
+    optimizer = Adafactor(model.parameters(), lr=args.lr, relative_step=False)
     # optimizer = Adam(model.parameters(), lr=args.lr)
     # optimizer = AdamW(model.parameters(), lr=args.lr)
     # optimizer = Lamb(model.parameters(), lr=args.lr)
@@ -157,7 +155,7 @@ def main():
     # optimizer = NovoFactor(model.parameters(), lr=args.lr)
     # optimizer = Algo5(model.parameters())
     # optimizer = Algo5(model.parameters(), lr=args.lr, relative_step=False)
-    optimizer = Algo6(model.parameters())
+    # optimizer = Algo6(model.parameters())
 
 
 
