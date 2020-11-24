@@ -142,7 +142,7 @@ def main():
 
     model = Net().to(device)
     # optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
-    optimizer = Adafactor(model.parameters(), lr=args.lr, relative_step=False)
+    # optimizer = Adafactor(model.parameters())
     # optimizer = Adam(model.parameters(), lr=args.lr)
     # optimizer = AdamW(model.parameters(), lr=args.lr)
     # optimizer = Lamb(model.parameters(), lr=args.lr)
