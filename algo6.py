@@ -150,12 +150,12 @@ class Algo6(Adafactor):
 
 					# Approximation of exponential moving average of square of gradient
 					second_moment = self._approx_sq_grad(exp_avg_sq_row, exp_avg_sq_col)
-					denominator = second_moment.norm() + group["epsilon"]
+					denominator = second_moment.norm().sqrt() + group["epsilon"]
 				else:
 					exp_avg_sq = state["exp_avg_sq"]
 
 					exp_avg_sq.mul_(beta2).add_(second_moment, alpha=1.0 - beta2)
-					denominator = exp_avg_sq.rsqrt().norm() + group["epsilon"]
+					denominator = exp_avg_sq.sqrt().norm() + group["epsilon"]
 
 				nominator = grad
 
