@@ -25,6 +25,7 @@ from algo4 import Algo4
 from algo5 import Algo5
 from algo6 import Algo6
 
+from utils import *
 
 
 
@@ -97,7 +98,7 @@ def main():
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=14, metavar='N',
+    parser.add_argument('--epochs', type=int, default=1, metavar='N',
                         help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
                         help='learning rate (default: 1.0)')
@@ -153,15 +154,17 @@ def main():
     # optimizer = Algo3(model.parameters())
     # optimizer = Algo4(model.parameters())
     # optimizer = NovoFactor(model.parameters(), lr=args.lr)
-    # optimizer = Algo5(model.parameters())
+    optimizer = Algo5(model.parameters())
     # optimizer = Algo5(model.parameters(), lr=args.lr, relative_step=False)
     # optimizer = Algo6(model.parameters())
+    # optimizer = Algo1(model.parameters())
 
 
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, epoch)
+        with memory_time_moniter() as mt:
+            train(args, model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
         scheduler.step()
 
