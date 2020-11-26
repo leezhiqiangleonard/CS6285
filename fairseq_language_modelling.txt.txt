@@ -1,0 +1,62 @@
+CUDA_VISIBLE_DEVICES=2 fairseq-train --task language_modeling \                    :( 1 20-11-25 - 23:48:20
+  data/bin \
+  --save-dir checkpoints/lm_adam \
+  --arch transformer_lm --share-decoder-input-output-embed \
+  --dropout 0.1 \
+  --optimizer adam --adam-betas '(0.9, 0.98)' --weight-decay 0.001 --clip-norm 0.0 \
+  --lr 0.00025 --lr-scheduler inverse_sqrt --warmup-updates 4000 --warmup-init-lr 1e-07 \
+  --tokens-per-sample 512 --sample-break-mode none \
+  --max-tokens 2048 --update-freq 32 \
+  --fp16 --memory-efficient-fp16 --log-interval 1000 --no-progress-bar --log-format json --skip-invalid-size-inputs-valid-test \
+  --max-update 50000 --tensorboard-logdir logs
+
+
+CUDA_VISIBLE_DEVICES=1 fairseq-train --task language_modeling \                                                                                                                                          20-11-26 - 0:02:04
+  data/bin \
+  --save-dir checkpoints/lm_ada \
+  --arch transformer_lm --share-decoder-input-output-embed \
+  --dropout 0.1 \
+  --optimizer adafactor --scale-parameter --weight-decay 0.0 --clip-norm 0.0 \
+  --lr 0.0003 --lr-scheduler inverse_sqrt --warmup-updates 4000 --warmup-init-lr 1e-07 \
+  --tokens-per-sample 512 --sample-break-mode none \
+  --max-tokens 2048 --update-freq 32 \
+  --fp16 --memory-efficient-fp16 --log-interval 1000 --no-progress-bar --log-format json --skip-invalid-size-inputs-valid-test \
+  --max-update 50000 --tensorboard-logdir logs
+
+
+CUDA_VISIBLE_DEVICES=1 fairseq-train --task language_modeling \                         20-11-26 - 11:44:13
+  data/bin \
+  --save-dir checkpoints/lm_algo5 \
+  --arch transformer_lm --share-decoder-input-output-embed \
+  --dropout 0.1 --save-interval-updates 10000 --keep-interval-updates 10 \
+  --optimizer algo5 --algo5-betas '(0.95, 0.25)'  --scale-parameter --relative-step --weight-decay 0.0 --clip-norm 0.0 \
+  --lr 0.0003 --lr-scheduler inverse_sqrt --warmup-updates 4000 --warmup-init-lr 1e-07 \
+  --tokens-per-sample 512 --sample-break-mode none \
+  --max-tokens 2048 --update-freq 32 \  --fp16 --memory-efficient-fp16 --log-interval 1000 --no-progress-bar --log-format json --skip-invalid-size-inputs-valid-test \
+  --max-update 50000 --tensorboard-logdir logs
+
+
+CUDA_VISIBLE_DEVICES=2 fairseq-train --task language_modeling \                                                                                                                                         20-11-24 - 22:10:14
+  data/bin/bin2 \
+  --save-dir checkpoints/lm_novograd \
+  --arch transformer_lm --share-decoder-input-output-embed \
+  --dropout 0.1 --save-interval-updates 10000 --keep-interval-updates 10 \
+  --optimizer novograd --novograd-betas '(0.95, 0.25)' --weight-decay 0.0 --clip-norm 0.0 \
+  --lr 0.01 --lr-scheduler inverse_sqrt --warmup-updates 4000 --warmup-init-lr 1e-07 \
+  --tokens-per-sample 512 --sample-break-mode none \
+  --max-tokens 2048 --update-freq 32 \
+  --fp16 --memory-efficient-fp16 --log-interval 1000 --no-progress-bar --log-format json --skip-invalid-size-inputs-valid-test \
+  --max-update 50000 --tensorboard-logdir logs
+
+
+CUDA_VISIBLE_DEVICES=2 fairseq-train --task language_modeling \                    :( 1 20-11-26 - 11:18:17
+  data/bin/bin2 \
+  --save-dir checkpoints/lm_algo6 \
+  --arch transformer_lm --share-decoder-input-output-embed \
+  --dropout 0.1 --save-interval-updates 10000 --keep-interval-updates 10 \
+  --optimizer algo6 --algo6-betas '(0.95, 0.25)' --scale-parameter --relative-step --weight-decay 0.0 --clip-norm 0.0 \
+  --lr 0.0003 --lr-scheduler inverse_sqrt --warmup-updates 4000 --warmup-init-lr 1e-07 \
+  --tokens-per-sample 512 --sample-break-mode none \
+  --max-tokens 2048 --update-freq 32 \
+  --fp16 --memory-efficient-fp16 --log-interval 1000 --no-progress-bar --log-format json --skip-invalid-size-inputs-valid-test \
+  --max-update 50000 --tensorboard-logdir logs
