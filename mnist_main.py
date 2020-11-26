@@ -98,7 +98,7 @@ def main():
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=1, metavar='N',
+    parser.add_argument('--epochs', type=int, default=14, metavar='N',
                         help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
                         help='learning rate (default: 1.0)')
@@ -148,7 +148,7 @@ def main():
     # optimizer = AdamW(model.parameters(), lr=args.lr)
     # optimizer = Lamb(model.parameters(), lr=args.lr)
     # optimizer = LARS(model.parameters(), lr=args.lr)
-    # optimizer = NovoGrad(model.parameters(), lr=0.0005)
+    # optimizer = NovoGrad(model.parameters(), lr=args.lr)
     # optimizer = SGD(model.parameters(), lr=args.lr)
     # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
     # optimizer = Algo3(model.parameters())
@@ -163,8 +163,9 @@ def main():
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
-        with memory_time_moniter() as mt:
-            train(args, model, device, train_loader, optimizer, epoch)
+        train(args, model, device, train_loader, optimizer, epoch)
+        # with memory_time_moniter() as mt:
+            # train(args, model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
         scheduler.step()
 
