@@ -15,7 +15,7 @@ from adam import Adam
 from adamw import AdamW
 from lamb import Lamb
 from lars import LARS
-from novograd import NovoGrad
+from nemo_novograd import NovoGrad
 from novofactor import NovoFactor
 from sgd import SGD
 
@@ -171,6 +171,8 @@ def main():
 
     if args.save_model:
         torch.save(model.state_dict(), "mnist_cnn.pt")
+
+    print(optimizer)
 
 
 if __name__ == '__main__':

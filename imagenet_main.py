@@ -21,7 +21,7 @@ import torchvision.models as models
 from adafactor import Adafactor
 from lamb import Lamb
 from lars import LARS
-from novograd import NovoGrad
+from nemo_novograd import NovoGrad
 
 from algo5 import Algo5
 from algo6 import Algo6
@@ -270,6 +270,8 @@ def main_worker(gpu, ngpus_per_node, args):
                 'best_acc1': best_acc1,
                 'optimizer' : optimizer.state_dict(),
             }, is_best)
+
+    # print(optimizer)
 
 
 def train(train_loader, model, criterion, optimizer, epoch, args):
